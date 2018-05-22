@@ -456,11 +456,11 @@ public class RecipeDetailsListFragment extends Fragment {
 
     public ArrayList <String> getWidgetIngredients(int mCurrentId) {
         ArrayList<String> ingredientsList = new ArrayList<>();
-        String ingredientHolderString = "";
         Cursor ingredientsCursor = MainActivity.widgetCursor;
         assert ingredientsCursor != null;
         ingredientsCursor.moveToPosition( mCurrentId );
         for (int i = 0; i < 12; i++) {
+            String ingredientHolderString = "";
             String currentNumber = addNumberStrings().get( i );
             String tempString = "ingredient";
             String tempEnd = "Name";

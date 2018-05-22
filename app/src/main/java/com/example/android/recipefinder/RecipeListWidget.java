@@ -46,7 +46,7 @@ public class RecipeListWidget extends AppWidgetProvider {
             views.setViewVisibility( R.id.next_button, VISIBLE);
             views.setViewVisibility( R.id.previous_button, VISIBLE);
             views.setTextViewText( R.id.appwidget_text, widgetText );
-            views.setTextViewText( R.id.appwidget_ingredient_number, String.valueOf( ingredientNumber ) );
+            views.setTextViewText( R.id.appwidget_ingredient_number, String.valueOf( ingredientNumber+1 ) );
             views.setTextViewText( R.id.appwidget_ingredient_number_of_x, String.valueOf( widgetIngredients.size()) );
             Log.e( "UPDATING", "a");
             Intent intent = new Intent( context, MainActivity.class );
@@ -56,12 +56,12 @@ public class RecipeListWidget extends AppWidgetProvider {
             Intent previousIntent = new Intent( context, RecipeListWidetIntents.class );
             previousIntent.setAction( ACTION_PREVIOUS );
             PendingIntent previousPendingIntent = PendingIntent.getBroadcast( context, 0, previousIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            views.setOnClickPendingIntent( R.id.previous_button, previousPendingIntent);
+            views.setOnClickPendingIntent( R.id.widget_previous, previousPendingIntent);
             Log.e( "UPDATING", previousPendingIntent.toString());
             Intent nextIntent = new Intent( context, RecipeListWidetIntents.class );
             nextIntent.setAction( ACTION_NEXT );
             PendingIntent nextPendingIntent = PendingIntent.getService( context, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            views.setOnClickPendingIntent( R.id.next_button, nextPendingIntent);
+            views.setOnClickPendingIntent( R.id.widget_next, nextPendingIntent);
         }
         if (widgetIngredients==null){
             views.setViewVisibility( R.id.appwidget_text, GONE );
@@ -89,6 +89,7 @@ public class RecipeListWidget extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
+        ingredientNumber = 0;
     }
 
     @Override
@@ -115,11 +116,11 @@ public class RecipeListWidget extends AppWidgetProvider {
 
     private void handlePrevious() {
         Log.e("GOT TO HERE", String.valueOf( ingredientNumber ) );
-        if (ingredientNumber>0){
-            ingredientNumber--;
+        if (ingredientNumber==0){
+            ingredientNumber=widgetIngredients.size()-1;
         }
         else {
-            ingredientNumber=widgetIngredients.size();
+            ingredientNumber--;
         }
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance( mContext );
         int [] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName( mContext, RecipeListWidget.class ));
@@ -129,11 +130,12 @@ public class RecipeListWidget extends AppWidgetProvider {
 
     private void handleNext() {
         Log.e("GOT TO HERE", String.valueOf(ingredientNumber ) );
-        if (ingredientNumber<widgetIngredients.size()){
+        int tempIngNumber = widgetIngredients.size()-1;
+        if (ingredientNumber<=tempIngNumber){
             ingredientNumber++;
         }
         else {
-            ingredientNumber=0;
+            ingredientNumber=1;
         }
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance( mContext);
         int [] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName( mContext, RecipeListWidget.class ));

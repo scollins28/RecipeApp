@@ -10,6 +10,9 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import static com.example.android.recipefinder.RecipeListWidget.ingredientNumber;
+import static com.example.android.recipefinder.RecipeListWidget.widgetIngredients;
+
 public class RecipeListWidetIntents extends IntentService {
     public static final String ACTION_PREVIOUS = "ActionRecieverPrevious";
     public static final String ACTION_NEXT = "ActionRecieverNext";
@@ -42,23 +45,23 @@ public class RecipeListWidetIntents extends IntentService {
             final String action = intent.getAction();
             Log.e( "SO FAR SO GOOD", "CAN WE GO FURTHER" );
             if (action.equals( ACTION_PREVIOUS)) {
-                Log.e( "LOOKS LIKE IT", "BUT THE LAST STEP" );
+                Log.e( "LOOKS LIKE IT", "BUT THE PREVIOUS STEP" );
                 handlePrevious();
             }
             else if (action.equals( ACTION_NEXT)) {
-                Log.e( "LOOKS LIKE IT", "BUT THE LAST STEP" );
+                Log.e( "LOOKS LIKE IT", "BUT THE NEXT STEP" );
                 handleNext();
             }
         }
     }
 
     private void handlePrevious() {
-        Log.e("GOT TO HERE", String.valueOf( RecipeListWidget.ingredientNumber ) );
-            if (RecipeListWidget.ingredientNumber>0){
-                RecipeListWidget.ingredientNumber--;
+        Log.e("GOT TO HERE", String.valueOf( ingredientNumber ) );
+            if (ingredientNumber==1){
+                ingredientNumber=widgetIngredients.size()-1;
             }
             else {
-                RecipeListWidget.ingredientNumber=RecipeListWidget.widgetIngredients.size();
+                ingredientNumber--;
             }
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance( this );
         int [] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName( this, RecipeListWidget.class ));
@@ -67,12 +70,13 @@ public class RecipeListWidetIntents extends IntentService {
 
 
     private void handleNext() {
-        Log.e("GOT TO HERE", String.valueOf( RecipeListWidget.ingredientNumber ) );
-        if (RecipeListWidget.ingredientNumber<RecipeListWidget.widgetIngredients.size()){
-            RecipeListWidget.ingredientNumber++;
+        Log.e("GOT TO HERE", String.valueOf( ingredientNumber ) );
+        int tempIngNumber = widgetIngredients.size()-1;
+        if (ingredientNumber==tempIngNumber){
+            ingredientNumber=0;
         }
         else {
-            RecipeListWidget.ingredientNumber=0;
+            ingredientNumber++;
         }
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance( this );
         int [] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName( this, RecipeListWidget.class ));
