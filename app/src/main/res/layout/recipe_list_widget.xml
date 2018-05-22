@@ -3,7 +3,16 @@
     android:layout_height="match_parent"
     android:padding="@dimen/widget_margin"
     android:id="@+id/widget_complete_view"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    >
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorPrimaryDark"
+    android:id="@+id/background_view">
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +25,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:background="@color/colorPrimaryDark"
         android:text="@string/recipe_placeholder"
         android:textColor="#ffffff"
         android:textSize="24sp"
@@ -26,7 +34,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:background="@color/colorPrimaryDark"
         android:text="@string/of"
         android:textColor="#ffffff"
         android:textSize="24sp"
@@ -37,7 +44,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:background="@color/colorPrimaryDark"
         android:text="@string/recipe_placeholder"
         android:textColor="#ffffff"
         android:textSize="24sp"
@@ -51,19 +57,10 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:layout_margin="8dp"
-        android:background="@color/colorPrimaryDark"
         android:text="@string/recipe_placeholder"
         android:textColor="#ffffff"
         android:textSize="24sp"
         android:textStyle="bold|italic" />
-
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/widget_icon"
-        android:id="@+id/widget_icon"
-        android:contentDescription="@string/widget_icon_cd"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -85,5 +82,11 @@
         android:paddingTop="8dp"
         android:layout_gravity="right"/>
     </LinearLayout>
-
+</LinearLayout>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/widget_icon"
+        android:id="@+id/widget_icon"
+        android:contentDescription="@string/widget_icon_cd"/>
 </LinearLayout>

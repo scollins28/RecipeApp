@@ -64,11 +64,13 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.support.constraint.Constraints.TAG;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
 import static com.example.android.recipefinder.R.id.checkbox;
+import static com.example.android.recipefinder.R.id.details_fragment_id;
 import static com.example.android.recipefinder.R.id.recipe_steps_instructions;
 
 public class RecipeDetailsListFragment extends Fragment {
 
     int mCurrentId = MainActivity.currentRecipeId;
+    static int mTestId = MainActivity.currentRecipeId;
     int mStepNumber = 0;
     TextView currentStepTv;
     PlayerView playerView;
@@ -102,6 +104,7 @@ public class RecipeDetailsListFragment extends Fragment {
     public RecipeDetailsListFragment() {
     }
 
+
     public interface OnChangeSlideListener {
         public void onArticleSelected(int position);
     }
@@ -114,7 +117,9 @@ public class RecipeDetailsListFragment extends Fragment {
         try {
             if (mExoPlayer!=null){
             mMediaSession.setActive( false );
-            mExoPlayer.release();}
+            mMediaSession.release();
+            mExoPlayer.release();
+            playing=false;}
 
             mCallback = (OnChangeSlideListener) context;
         } catch (ClassCastException e) {
@@ -291,7 +296,9 @@ public class RecipeDetailsListFragment extends Fragment {
         ingredients = getIngredients( mCurrentId );
         if (mStepNumber == 0) {
             instructionsTv.setText( ingredients );
+            widgetCheckBox.setVisibility( View.VISIBLE );
         } else {
+            widgetCheckBox.setVisibility( View.INVISIBLE );
             getInstructions( mStepNumber );
             getTitle( mStepNumber );
             getVideoDetails( mStepNumber );
@@ -414,8 +421,17 @@ public class RecipeDetailsListFragment extends Fragment {
                 }
 
                 @Override
+                public void onStop() {
+                    super.onStop();
+                    mExoPlayer.release();
+                    mMediaSession.release();
+                }
+
+                @Override
                 public void onPause() {
                     super.onPause();
+
+
                 }
             }
 
@@ -485,4 +501,14 @@ public class RecipeDetailsListFragment extends Fragment {
         return ingredientsList;
     }
 
+
+    @Override
+    public void onDetach() {
+        if (mExoPlayer!=null){
+        mMediaSession.setActive( false );
+        mMediaSession.release();
+        mExoPlayer.release();
+        playing=false;}
+        super.onDetach();
+    }
 }

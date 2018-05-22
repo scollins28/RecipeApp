@@ -24,17 +24,11 @@ import java.util.ArrayList;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
 
 public class MasterListFragment extends Fragment {
-
-    String pizza = "Pizza";
-    String pasta = "Pasta";
     ArrayList<String> recipes;
     Context mContext;
 
-
-
     public MasterListFragment() {
-
-    }
+        }
 
     @Nullable
     @Override

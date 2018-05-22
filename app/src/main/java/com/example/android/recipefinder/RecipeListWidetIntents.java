@@ -17,6 +17,7 @@ public class RecipeListWidetIntents extends IntentService {
     public static final String ACTION_PREVIOUS = "ActionRecieverPrevious";
     public static final String ACTION_NEXT = "ActionRecieverNext";
 
+
     /**
      */
     public RecipeListWidetIntents() {

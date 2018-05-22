@@ -86,7 +86,7 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     android.support.v4.app.FragmentTransaction fragmentSecondaryTransaction;
     static long playerCurrentPosition = 0;
     static Cursor widgetCursor;
-    public static int widgetRecipe = -1;
+    public static int widgetRecipe;
 
 
     @Override
@@ -117,34 +117,36 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e( "main activity", "test log" );
-        mContext = getApplicationContext();
-        recipeJSON = getString( R.string.recipe_JSON );
-        LoaderManager loaderManager = getLoaderManager();
-        loaderManager.initLoader( RECIPE_LOADER_ID, null, this );
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.main_activity );
-        mTwoPane = false;
-        currentView = 1;
-        masterListFragment = new MasterListFragment();
-        fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add( R.id.master_list_fragment, masterListFragment ).commit();
-        actionBar = getActionBar();
-        actionBar.show();
-        setActionBar();
-        widgetCursor = getContentResolver().query( CONTENT_URI, null, null, null, null );
-
-
+            Log.e( "main activity", "test log" );
+            mContext = getApplicationContext();
+            recipeJSON = getString( R.string.recipe_JSON );
+            LoaderManager loaderManager = getLoaderManager();
+            loaderManager.initLoader( RECIPE_LOADER_ID, null, this );
+            super.onCreate( savedInstanceState );
+            setContentView( R.layout.main_activity );
+            mTwoPane = false;
+            currentView = 1;
+            masterListFragment = new MasterListFragment();
+            fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.add( R.id.master_list_fragment, masterListFragment ).commit();
+            actionBar = getActionBar();
+            actionBar.show();
+            setActionBar();
+            widgetCursor = getContentResolver().query( CONTENT_URI, null, null, null, null );
+            if (savedInstanceState!=null){
+                widgetRecipe = savedInstanceState.getInt( "Widget recipe");
+            }
         listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (detailsListFragment.widgetCheckBox.isChecked()==true){
-                    widgetRecipe = currentRecipeId;
-                    Log.e( "currentRecipe", String.valueOf( widgetRecipe ) );
-                }
-                else {
-                    widgetRecipe = -1;
-                }
+                    if (detailsListFragment.widgetCheckBox.isChecked()){
+                        MainActivity.widgetRecipe = MainActivity.currentRecipeId;
+                    }
+                    else if (detailsListFragment.widgetCheckBox.isChecked()==false){
+                        MainActivity.widgetRecipe=-1;
+                    }
+
+
                     detailsListFragment.updateWidget();
                     Intent intent = new Intent(mContext, RecipeListWidget.class);
                     intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
@@ -162,7 +164,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
         if (mTwoPane == false) {
             currentRecipeStep = position;
             fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            releaseMedia();
             playerCurrentPosition = 0;
             detailsFragment = new RecipeDetailsListFragment();
             fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
@@ -188,6 +189,8 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
         outState.putBoolean( "Two Pane State", mTwoPane );
         outState.putInt( "Current Page", currentView );
         outState.putLong("Video position", playerCurrentPosition);
+        outState.putStringArrayList( "Widget list", RecipeListWidget.widgetIngredients );
+        outState.putInt( "Widget recipe", widgetRecipe );
         super.onSaveInstanceState( outState );
     }
 
@@ -197,16 +200,20 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
         mTwoPane = savedInstanceState.getBoolean( "Two Pane State" );
         currentView = savedInstanceState.getInt( "Current Page" );
         playerCurrentPosition = savedInstanceState.getLong( "Video position");
+        RecipeListWidget.widgetIngredients = savedInstanceState.getStringArrayList( "Widget list" );
+        widgetRecipe = savedInstanceState.getInt( "Widget recipe" );
         FrameLayout secondaryFrameLayout;
         if (mTwoPane == true) {
             switch (currentView) {
-                case 1:  masterListFragment = new MasterListFragment();
+                case 1:
                         mTwoPane = false;
                         secondaryFrameLayout = (FrameLayout) findViewById( R.id.secondary_tablet_fragment );
                         secondaryFrameLayout.setVisibility( View.INVISIBLE);
+                        masterListFragment = new MasterListFragment();
                         fragmentTransaction.replace( R.id.master_list_fragment, masterListFragment ).commit();
                         break;
-                case 2: LinearLayout titlebar = (LinearLayout) findViewById( R.id.title_bar );
+                case 2: Log.e( "Current View", String.valueOf( currentView ) );
+                        LinearLayout titlebar = (LinearLayout) findViewById( R.id.title_bar );
                         titlebar.setVisibility( View.GONE);
                         secondaryFrameLayout = (FrameLayout) findViewById( R.id.secondary_tablet_fragment );
                         secondaryFrameLayout.setVisibility( View.VISIBLE );
@@ -239,6 +246,14 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             }
             setActionBar();
         }
+        RecipeDetailsListFragment restoreDetailsListFragment = new RecipeDetailsListFragment();
+        restoreDetailsListFragment.updateWidget();
+        Intent intent = new Intent(mContext, RecipeListWidget.class);
+        intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+        int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), RecipeListWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+        sendBroadcast(intent);
+        Log.e( "currentRecipe", String.valueOf( widgetRecipe ) );
         super.onRestoreInstanceState( savedInstanceState );
     }
 
@@ -438,9 +453,11 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
                     insertNewData(i, recipeToAdd);
                 }
             }
-        masterListFragment = new MasterListFragment();
-        fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace( R.id.master_list_fragment, masterListFragment ).commit();
+            if (currentView==1) {
+                masterListFragment = new MasterListFragment();
+                fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace( R.id.master_list_fragment, masterListFragment ).commit();
+            }
         widgetCursor = getContentResolver().query( CONTENT_URI, null, null, null, null );
         Intent intent = new Intent(this, RecipeListWidget.class);
         intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
@@ -488,7 +505,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
                     int tempStepNumber = currentRecipeStep + 1;
                     if (maxSteps > tempStepNumber) {
                         currentRecipeStep++;
-                        releaseMedia();
                         playerCurrentPosition = 0;
                         detailsFragment = new RecipeDetailsListFragment();
                 if (mTwoPane) {
@@ -497,8 +513,9 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
                     fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
                 }
             }
-                    detailsListFragment.getMStepNumber(currentRecipeStep);
+                    detailsListFragment.mStepNumber=currentRecipeStep;
             break;
+
         }
         setActionBar();
     }

@@ -69,7 +69,7 @@ public class MasterListAdapter extends BaseAdapter {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(8, 8, 8, 8);
             frameLayout.addView( textView);
-            imageView.setImageResource( R.drawable.sample_image);
+            imageView.setImageResource( R.drawable.samplebackgroudncake);
             textView.setText( recipes.get( position ));
             textView.setGravity( Gravity.BOTTOM );
             textView.setTextAlignment( View.TEXT_ALIGNMENT_CENTER );

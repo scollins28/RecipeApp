@@ -45,6 +45,7 @@ public class RecipeListWidget extends AppWidgetProvider {
             views.setViewVisibility( R.id.widget_icon, GONE );
             views.setViewVisibility( R.id.next_button, VISIBLE);
             views.setViewVisibility( R.id.previous_button, VISIBLE);
+            views.setViewVisibility( R.id.background_view, VISIBLE );
             views.setTextViewText( R.id.appwidget_text, widgetText );
             views.setTextViewText( R.id.appwidget_ingredient_number, String.valueOf( ingredientNumber+1 ) );
             views.setTextViewText( R.id.appwidget_ingredient_number_of_x, String.valueOf( widgetIngredients.size()) );
@@ -52,6 +53,7 @@ public class RecipeListWidget extends AppWidgetProvider {
             Intent intent = new Intent( context, MainActivity.class );
             PendingIntent pendingIntent = PendingIntent.getActivity( context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
             views.setOnClickPendingIntent( R.id.appwidget_text, pendingIntent );
+            views.setOnClickPendingIntent( R.id.widget_icon , pendingIntent);
             Log.e( "UPDATING", "b");
             Intent previousIntent = new Intent( context, RecipeListWidetIntents.class );
             previousIntent.setAction( ACTION_PREVIOUS );
@@ -70,6 +72,7 @@ public class RecipeListWidget extends AppWidgetProvider {
             views.setViewVisibility( R.id.appwidget_ingredient_number_of_x, GONE);
             views.setViewVisibility( R.id.widget_icon, VISIBLE);
             views.setViewVisibility( R.id.next_button, GONE);
+            views.setViewVisibility( R.id.background_view, GONE );
             views.setViewVisibility( R.id.previous_button, GONE);
         }
 
@@ -140,6 +143,12 @@ public class RecipeListWidget extends AppWidgetProvider {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance( mContext);
         int [] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName( mContext, RecipeListWidget.class ));
         updateAppWidget( mContext, appWidgetManager, appWidgetIds );
+    }
+
+    @Override
+    public void onRestored(Context context, int[] oldWidgetIds, int[] newWidgetIds) {
+        super.onRestored( context, oldWidgetIds, newWidgetIds );
+
     }
 }
 
