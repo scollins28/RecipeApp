@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/details_fragment_id"
+    android:name="com.example.android.recipefinder.RecipeDetailsListFragment">
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_margin="8dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <ImageView
+            android:layout_height="100dp"
+            android:layout_width="match_parent"
+            android:src="@drawable/samplebackgroudncake"
+            android:scaleType="centerCrop"
+            android:id="@+id/recipe_steps_image_view"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="32sp"
+            android:layout_alignBottom="@+id/recipe_steps_image_view"
+            android:textAlignment="center"
+            android:textColor="#ffffff"
+            android:text="@string/recipe_placeholder"
+            android:id="@+id/recipe_steps_tv_recipeName"
+            />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set Ingredients to Widget"
+            android:checked="false"
+            android:id="@+id/checkbox_to_display_in_widget"
+            />
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ingredients_list"
+        android:textSize="32sp"
+        android:textAlignment="center"
+        android:id="@+id/recipe_steps_tv_current_step"
+        />
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:visibility="visible"
+        android:layout_margin="16dp"
+        android:id="@+id/exoPlayer"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/instructions_list"
+        android:textSize="32sp"
+        android:textAlignment="center"
+        android:visibility="visible"
+        android:id="@+id/recipe_steps_instructions"
+        />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <com.omega_r.libs.OmegaCenterIconButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_electric_mixer"
+            android:textSize="12sp"
+            android:text="@string/previous"
+            android:drawableLeft="@drawable/ic_electric_mixer"
+            android:id="@+id/previous_button"/>
+
+        <com.omega_r.libs.OmegaCenterIconButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ingredients_svg"
+            android:textSize="12sp"
+            android:text="@string/ingredients"
+            android:drawableLeft="@drawable/ingredients_svg"
+            android:id="@+id/ingredients_button"
+            />
+
+        <com.omega_r.libs.OmegaCenterIconButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/next_svg"
+            android:text="@string/next"
+            android:textSize="12sp"
+            android:drawableLeft="@drawable/next_svg"
+            android:id="@+id/next_button"
+            />
+
+    </LinearLayout>
+</LinearLayout>
+</ScrollView>
+</FrameLayout>
