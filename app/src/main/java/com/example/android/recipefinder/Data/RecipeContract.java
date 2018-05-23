@@ -3,10 +3,6 @@ package com.example.android.recipefinder.Data;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import com.tjeannin.provigen.ProviGenBaseContract;
-import com.tjeannin.provigen.annotation.Column;
-import com.tjeannin.provigen.annotation.ContentUri;
-
 public class RecipeContract {
 
     public static final String AUTHORITY = "com.example.android.recipefinder";

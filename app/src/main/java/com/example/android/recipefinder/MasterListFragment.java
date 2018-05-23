@@ -6,18 +6,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
 
-
-import com.example.android.recipefinder.Data.RecipeContentProvider;
 import com.example.android.recipefinder.Data.RecipeContract;
-import com.example.android.recipefinder.Data.RecipeDbHelper;
 
 import java.util.ArrayList;
 

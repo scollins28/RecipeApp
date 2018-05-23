@@ -1,12 +1,9 @@
 package com.example.android.recipefinder;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageInstaller;
 import android.database.Cursor;
 import android.media.session.PlaybackState;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -14,23 +11,19 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
-import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -39,13 +32,6 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelectorResult;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
@@ -63,9 +49,6 @@ import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.support.constraint.Constraints.TAG;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
-import static com.example.android.recipefinder.R.id.checkbox;
-import static com.example.android.recipefinder.R.id.details_fragment_id;
-import static com.example.android.recipefinder.R.id.recipe_steps_instructions;
 
 public class RecipeDetailsListFragment extends Fragment {
 
@@ -79,7 +62,6 @@ public class RecipeDetailsListFragment extends Fragment {
     ArrayList<String> numbersArrayList = new ArrayList<>();
     Context mContext;
     static View rootView;
-    String currentVideoData = null;
     OmegaCenterIconButton nextButton;
     OmegaCenterIconButton ingredientsButton;
     OmegaCenterIconButton previousButton;
@@ -97,7 +79,7 @@ public class RecipeDetailsListFragment extends Fragment {
     Player.EventListener eventListener;
     Boolean playing;
     MediaSessionCompat mMediaSession;
-    public Long currentVideoPosition;
+    public Long currentVideoPosition = MainActivity.playerCurrentPosition;
     CheckBox widgetCheckBox;
 
 
@@ -131,7 +113,11 @@ public class RecipeDetailsListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        twoPane = MainActivity.mTwoPane;
+        if (getResources().getConfiguration().smallestScreenWidthDp>=599){
+        twoPane = true;
+        }
+        else {twoPane=false;}
+
         mCurrentId = MainActivity.currentRecipeId;
         mContext = getContext();
         mStepNumber = MainActivity.currentRecipeStep;
@@ -140,7 +126,7 @@ public class RecipeDetailsListFragment extends Fragment {
         currentVideoPosition = MainActivity.playerCurrentPosition;
         updateWidget();
 
-        if (twoPane = true) {
+        if (twoPane == true) {
             currentStepTv = (TextView) rootView.findViewById( R.id.step_title );
             playerView = (PlayerView) rootView.findViewById( R.id.exoPlayer );
             instructionsTv = rootView.findViewById( R.id.recipe_steps_instructions );
@@ -175,6 +161,7 @@ public class RecipeDetailsListFragment extends Fragment {
             else {
                 widgetCheckBox.setChecked( false );
             }
+            MainActivity.widgetCheckbox = widgetCheckBox;
             widgetCheckBox.setOnClickListener( MainActivity.listener );
         } else if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE) {
             playerView = (PlayerView) rootView.findViewById( R.id.exoPlayer );
@@ -209,7 +196,7 @@ public class RecipeDetailsListFragment extends Fragment {
         }
         if (getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT || twoPane) {
             setData( mStepNumber );
-        } else if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE && twoPane) {
+        } else if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE &! twoPane) {
             getVideoDetails( mStepNumber );
             if (currentVideoValue.isEmpty() || currentVideoValue.equals( "noVideo" )) {
                 noVideoTv.setVisibility( View.VISIBLE );
@@ -330,7 +317,6 @@ public class RecipeDetailsListFragment extends Fragment {
         instructionColumnToRetrieve = instructionColumnToRetrieve.concat( addNumberStrings().get( (mStepNumber - 1) ) ).concat( "VideoURL" );
         String currentVideoData = detailsCursor.getString( detailsCursor.getColumnIndex( instructionColumnToRetrieve ) );
         currentVideoValue = currentVideoData;
-        Log.e( "current video = ", detailsCursor.getString( detailsCursor.getColumnIndex( instructionColumnToRetrieve ) ) );
         if (currentVideoData.isEmpty() || currentVideoData.equals( "noVideo" )) {
             playerView.setVisibility( View.GONE );
         } else {
@@ -340,9 +326,6 @@ public class RecipeDetailsListFragment extends Fragment {
         }
     }
 
-    public void getMStepNumber(int number) {
-        mStepNumber = number;
-    }
 
     public SimpleExoPlayer createExoPlayer() {
             TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory( bandwidthMeter );
@@ -447,7 +430,6 @@ public class RecipeDetailsListFragment extends Fragment {
             mMediaSession.setActive( true );
             if (currentVideoPosition!=null) {
                 mStateBuilder.setState( PlaybackState.STATE_PLAYING, currentVideoPosition, 1f );
-                Log.e( "psotion", String.valueOf( currentVideoPosition ) );
                 mExoPlayer.seekTo( currentVideoPosition );
                 mExoPlayer.setPlayWhenReady( true );
             }

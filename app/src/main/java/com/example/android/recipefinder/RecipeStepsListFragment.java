@@ -1,13 +1,11 @@
 package com.example.android.recipefinder;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,16 +16,10 @@ import com.example.android.recipefinder.Data.RecipeContract;
 
 import java.util.ArrayList;
 
-import static com.example.android.recipefinder.Data.RecipeContract.*;
-import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.*;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
-import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.STEP_EIGHT_SHORT_DESCRIPTION;
-import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.STEP_SEVEN_SHORT_DESCRIPTION;
 
 public class RecipeStepsListFragment extends Fragment {
 
-    String pizza = "Ingredients";
-    String pasta = "Steps";
     static ArrayList<String> steps;
     Context mContext;
     int mRecipeId;

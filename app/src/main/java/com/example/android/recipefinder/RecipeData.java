@@ -1,6 +1,5 @@
 package com.example.android.recipefinder;
 
-import android.database.Cursor;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -163,21 +162,4 @@ class RecipeData {
         return url;
     }
 
-
-    public static ArrayList<String> addNumberStrings() {
-        ArrayList<String> numberList = new ArrayList<String>();
-        numberList.add( "One" );
-        numberList.add( "Two" );
-        numberList.add( "Three" );
-        numberList.add( "Four" );
-        numberList.add( "Five" );
-        numberList.add( "Six" );
-        numberList.add( "Seven" );
-        numberList.add( "Eight" );
-        numberList.add( "Nine" );
-        numberList.add( "Ten" );
-        numberList.add( "Eleven" );
-        numberList.add( "Twelve" );
-        return numberList;
-    }
 }

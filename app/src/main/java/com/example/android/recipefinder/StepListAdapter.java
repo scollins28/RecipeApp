@@ -2,36 +2,20 @@ package com.example.android.recipefinder;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.LauncherActivity;
-import android.content.ClipData;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
-import org.xmlpull.v1.XmlPullParser;
-
 import java.util.ArrayList;
-import java.util.zip.Inflater;
-
-import static android.content.ContentValues.TAG;
-import static android.support.v7.widget.RecyclerView.*;
-import static com.example.android.recipefinder.R.drawable.sample_image;
 
 
 // Custom adapter class that displays a list of Android-Me images in a GridView

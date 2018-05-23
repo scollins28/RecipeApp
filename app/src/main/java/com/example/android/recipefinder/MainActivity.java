@@ -1,8 +1,6 @@
 package com.example.android.recipefinder;
 
 import android.app.ActionBar;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -10,56 +8,26 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.res.Configuration;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.RequiresApi;
-import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toolbar;
 
-
-import com.example.android.recipefinder.Data.RecipeContentProvider;
-import com.example.android.recipefinder.Data.RecipeContract;
 import com.example.android.recipefinder.Data.RecipeContract.RecipeTable;
-import com.example.android.recipefinder.Data.RecipeDbHelper;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.RendererCapabilities;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.omega_r.libs.OmegaCenterIconButton;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-import static android.app.PendingIntent.getActivity;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.RECIPE_NAME;
-import static com.example.android.recipefinder.R.string.ingredients_list;
-import static com.example.android.recipefinder.R.string.recipe_JSON;
 
 
 
@@ -69,12 +37,10 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     static FrameLayout secondaryFrame;
     static RecipeDetailsListFragment detailsListFragment;
     Fragment recipeStepsFragment;
-    Fragment detailsFragment;
     public static boolean mTwoPane;
     public int currentView;
     public static int currentRecipeId = 0;
     public static int currentRecipeStep =0;
-    public static Tag currentTag;
     public static ArrayList<Recipe> recipes;
     public String recipeJSON;
     public Context mContext;
@@ -87,6 +53,7 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     static long playerCurrentPosition = 0;
     static Cursor widgetCursor;
     public static int widgetRecipe;
+    public static CheckBox widgetCheckbox;
 
 
     @Override
@@ -107,7 +74,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             secondaryFrame.setVisibility( View.VISIBLE );
             currentRecipeStep = 0;
             fragmentSecondaryTransaction = getSupportFragmentManager().beginTransaction();
-            releaseMedia();
             playerCurrentPosition = 0;
             detailsListFragment = new RecipeDetailsListFragment();
             fragmentSecondaryTransaction.replace( R.id.secondary_tablet_fragment, detailsListFragment).commit();
@@ -117,7 +83,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-            Log.e( "main activity", "test log" );
             mContext = getApplicationContext();
             recipeJSON = getString( R.string.recipe_JSON );
             LoaderManager loaderManager = getLoaderManager();
@@ -126,6 +91,10 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             setContentView( R.layout.main_activity );
             mTwoPane = false;
             currentView = 1;
+            if (getSharedPreferences("sharedPrefs", 0)!=null){
+            SharedPreferences preferences = getSharedPreferences( "sharedPrefs", 0 );
+            widgetRecipe = preferences.getInt( "Widget recipe", widgetRecipe );
+              }
             masterListFragment = new MasterListFragment();
             fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.add( R.id.master_list_fragment, masterListFragment ).commit();
@@ -136,7 +105,7 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             if (savedInstanceState!=null){
                 widgetRecipe = savedInstanceState.getInt( "Widget recipe");
             }
-        listener = new View.OnClickListener() {
+            listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                     if (detailsListFragment.widgetCheckBox.isChecked()){
@@ -145,18 +114,14 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
                     else if (detailsListFragment.widgetCheckBox.isChecked()==false){
                         MainActivity.widgetRecipe=-1;
                     }
-
-
                     detailsListFragment.updateWidget();
                     Intent intent = new Intent(mContext, RecipeListWidget.class);
                     intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
                     int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), RecipeListWidget.class));
                     intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
                     sendBroadcast(intent);
-                    Log.e( "currentRecipe", String.valueOf( widgetRecipe ) );
             }
         };
-
     }
 
     @Override
@@ -165,8 +130,8 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             currentRecipeStep = position;
             fragmentTransaction = getSupportFragmentManager().beginTransaction();
             playerCurrentPosition = 0;
-            detailsFragment = new RecipeDetailsListFragment();
-            fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
+            detailsListFragment = new RecipeDetailsListFragment();
+            fragmentTransaction.replace( R.id.master_list_fragment, detailsListFragment ).commit();
             currentView = 3;
             setActionBar();
         } else {
@@ -174,10 +139,9 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             LinearLayout titlebar = (LinearLayout) findViewById( R.id.title_bar );
             titlebar.setVisibility( View.GONE );
             fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            releaseMedia();
             playerCurrentPosition = 0;
-            detailsFragment = new RecipeDetailsListFragment();
-            fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsFragment ).commit();
+            detailsListFragment = new RecipeDetailsListFragment();
+            fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsListFragment ).commit();
             setActionBar();
         }
     }
@@ -212,18 +176,16 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
                         masterListFragment = new MasterListFragment();
                         fragmentTransaction.replace( R.id.master_list_fragment, masterListFragment ).commit();
                         break;
-                case 2: Log.e( "Current View", String.valueOf( currentView ) );
-                        LinearLayout titlebar = (LinearLayout) findViewById( R.id.title_bar );
+                case 2: LinearLayout titlebar = (LinearLayout) findViewById( R.id.title_bar );
                         titlebar.setVisibility( View.GONE);
                         secondaryFrameLayout = (FrameLayout) findViewById( R.id.secondary_tablet_fragment );
                         secondaryFrameLayout.setVisibility( View.VISIBLE );
                         recipeStepsFragment = new RecipeStepsListFragment();
                         fragmentTransaction.replace( R.id.master_list_fragment, recipeStepsFragment ).commit();
                         fragmentSecondaryTransaction = getSupportFragmentManager().beginTransaction();
-                        releaseMedia();
-                        detailsFragment = new RecipeDetailsListFragment();
+                        detailsListFragment = new RecipeDetailsListFragment();
                         detailsListFragment.currentVideoPosition = playerCurrentPosition;
-                        fragmentSecondaryTransaction.replace( R.id.secondary_tablet_fragment, detailsFragment ).commit();
+                        fragmentSecondaryTransaction.replace( R.id.secondary_tablet_fragment, detailsListFragment ).commit();
                         break;
                 default:break;
                 }
@@ -237,10 +199,9 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
                 case 2: recipeStepsFragment = new RecipeStepsListFragment();
                         fragmentTransaction.replace( R.id.master_list_fragment, recipeStepsFragment ).commit();
                         break;
-                case 3: releaseMedia();
-                    playerCurrentPosition = 0;
-                    detailsFragment = new RecipeDetailsListFragment();
-                    fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
+                case 3:
+                    detailsListFragment = new RecipeDetailsListFragment();
+                    fragmentTransaction.replace( R.id.master_list_fragment, detailsListFragment ).commit();
                         break;
                 default: break;
             }
@@ -253,7 +214,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
         int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), RecipeListWidget.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
         sendBroadcast(intent);
-        Log.e( "currentRecipe", String.valueOf( widgetRecipe ) );
         super.onRestoreInstanceState( savedInstanceState );
     }
 
@@ -264,7 +224,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
         int y = 0;
         int ingredientSize = recipes.get( position ).getIngredientNameArray().size();
         int stepsSize = recipes.get( position ).getStepLongDescriptionArray().size();
-        Log.e( "pre cv=", String.valueOf( recipes.indexOf( position ) ) );
         contentValues.put( RECIPE_NAME , recipeToAdd.mRecipeName);
         Recipe mRecipeToAdd = recipeToAdd;
         if (ingredientSize>x) {
@@ -410,15 +369,12 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             contentValues.put( RecipeTable.SERVINGS, recipes.get( position ).getRecipeServingSize() );
             contentValues.put( RecipeTable.IMAGE_URL, recipes.get( position ).getMainImageURL() );
 
-            Log.e( "ContentValues = ", String.valueOf( contentValues ) );
-        
         return contentValues;
     }
 
     public void insertNewData (int position, Recipe recipeToAdd){
         ContentValues contentValues = newContentValues(position, recipeToAdd);
         getContentResolver().insert( CONTENT_URI, contentValues);
-        Log.e( "NEW RECIPE ADDED", contentValues.getAsString( RECIPE_NAME ) );
     }
 
 
@@ -430,7 +386,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     @Override
     public void onLoadFinished(Loader loader, Object data) {
         Cursor loaderFinishedCursor = getContentResolver().query( CONTENT_URI, null, null, null, null );
-        Log.e( "Cursor", loaderFinishedCursor.toString() );
         int cursorLength = loaderFinishedCursor.getCount();
         int recipesLength = recipes.size();
 
@@ -478,44 +433,39 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
             case 0:
             if (currentRecipeStep - 1 >= 0) {
                 currentRecipeStep--;
-                releaseMedia();
                 playerCurrentPosition = 0;
-                detailsFragment = new RecipeDetailsListFragment();
+                detailsListFragment = new RecipeDetailsListFragment();
                 if (mTwoPane) {
-                    fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsFragment ).commit();
+                    fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsListFragment ).commit();
                 } else {
-                    fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
+                    fragmentTransaction.replace( R.id.master_list_fragment, detailsListFragment).commit();
                 }
-                detailsListFragment.getMStepNumber(currentRecipeStep);
             }
             break;
             case 1:
                 currentRecipeStep = 0;
                 playerCurrentPosition = 0;
-                releaseMedia();
-                detailsFragment = new RecipeDetailsListFragment();
+                detailsListFragment = new RecipeDetailsListFragment();
                 if (mTwoPane) {
-                    fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsFragment ).commit();
+                    fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsListFragment ).commit();
                 } else {
-                    fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
+                    fragmentTransaction.replace( R.id.master_list_fragment, detailsListFragment).commit();
                 }
-                detailsListFragment.getMStepNumber(currentRecipeStep);
+
             break;
                 case 2:
                     int tempStepNumber = currentRecipeStep + 1;
                     if (maxSteps > tempStepNumber) {
                         currentRecipeStep++;
                         playerCurrentPosition = 0;
-                        detailsFragment = new RecipeDetailsListFragment();
+                        detailsListFragment = new RecipeDetailsListFragment();
                 if (mTwoPane) {
-                    fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsFragment ).commit();
+                    fragmentTransaction.replace( R.id.secondary_tablet_fragment, detailsListFragment ).commit();
                 } else {
-                    fragmentTransaction.replace( R.id.master_list_fragment, detailsFragment ).commit();
+                    fragmentTransaction.replace( R.id.master_list_fragment, detailsListFragment ).commit();
                 }
             }
-                    detailsListFragment.mStepNumber=currentRecipeStep;
             break;
-
         }
         setActionBar();
     }
@@ -524,7 +474,6 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            // Respond to the action bar's Up/Home button
             case android.R.id.home:
                 if (currentView==3){
                     fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -549,12 +498,14 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
         else actionBar.setDisplayHomeAsUpEnabled( false );
     }
 
-    public void releaseMedia (){
-        if (currentRecipeStep > 0 && detailsListFragment.currentVideoValue!=null) {
-            if (detailsListFragment.mExoPlayer != null) {
-                detailsListFragment.mExoPlayer.release();
-            }
-        }
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        SharedPreferences preferences = getSharedPreferences("sharedPrefs", 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("Widget recipe", widgetRecipe);
+        editor.commit();
     }
 
 }
