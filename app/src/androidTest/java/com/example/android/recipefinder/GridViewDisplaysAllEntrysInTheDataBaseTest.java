@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.anything;
 
 @RunWith(AndroidJUnit4.class)
 public class GridViewDisplaysAllEntrysInTheDataBaseTest {
+    Boolean screenSizeTablet = MainActivity.screenSizeTablet;
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule =
@@ -35,7 +36,7 @@ public class GridViewDisplaysAllEntrysInTheDataBaseTest {
 
     @Test
     public void checkTheGridViewDisplaysAllDataBaseEntries() {
-
+        if (screenSizeTablet){
         for (int i = 0; i < MainActivity.widgetCursor.getCount(); i++) {
             onData( anything() ).inAdapterView( withId( R.id.master_list_fragment_grid_view ) )
                     .atPosition( i ).perform( click() );
@@ -48,12 +49,32 @@ public class GridViewDisplaysAllEntrysInTheDataBaseTest {
                 String instructionsToCheck = getInstructions( mStepNumber);
                 onView( withId( R.id.recipe_steps_instructions ) ).check( matches( withText( instructionsToCheck) ) );
                 if (x+1<=steps.size()) {
-                    onView( withId( R.id.next_button ) ).perform( click() );
+                    onView( withId( R.id.next_button ) ).perform( scrollTo(), click() );
                 }
             }
             onView( withContentDescription( "Navigate up" ) ).perform( click() );
         }
     }
+    else{
+            for (int i = 0; i < MainActivity.widgetCursor.getCount(); i++) {
+                onData( anything() ).inAdapterView( withId( R.id.master_list_fragment_grid_view ) )
+                        .atPosition( i ).perform( click() );
+                ArrayList<String> steps = addSteps( i );
+                onData( anything() ).inAdapterView( withId( R.id.recipe_steps_list_grid_view ) ).atPosition( 0 ).perform( click() );
+                for (int x = 0; x < steps.size(); x++) {
+                        if (x == 0) {
+                            onView( withId( R.id.next_button ) ).perform( scrollTo(), click() );
+                        }
+                        int mStepNumber = MainActivity.currentRecipeStep;
+                        String instructionsToCheck = getInstructions( mStepNumber );
+                        onView( withId( R.id.recipe_steps_instructions ) ).check( matches( withText( instructionsToCheck ) ) );
+                        if (x + 1 <= steps.size()) {
+                            onView( withId( R.id.next_button ) ).perform(scrollTo(),  click() );
+                        }
+                    }
+                    onView( withContentDescription( "Navigate up" ) ).perform( click() );
+            }
+        }}
 
     public ArrayList<String> addNumberStrings() {
         ArrayList<String> numberList = new ArrayList<String>();

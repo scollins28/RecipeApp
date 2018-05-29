@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
 
 public class MasterListFragment extends Fragment {
-    ArrayList<String> recipes;
+    private ArrayList<String> recipes;
     Context mContext;
 
     public MasterListFragment() {

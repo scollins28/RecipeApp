@@ -26,6 +26,7 @@ import com.example.android.recipefinder.Data.RecipeContract.RecipeTable;
 
 import java.util.ArrayList;
 
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.CONTENT_URI;
 import static com.example.android.recipefinder.Data.RecipeContract.RecipeTable.RECIPE_NAME;
 
@@ -36,6 +37,7 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     MasterListFragment masterListFragment;
     static FrameLayout secondaryFrame;
     static RecipeDetailsListFragment detailsListFragment;
+    static Boolean screenSizeTablet = false;
     Fragment recipeStepsFragment;
     public static boolean mTwoPane;
     public int currentView;
@@ -50,10 +52,12 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     ActionBar actionBar;
     android.support.v4.app.FragmentTransaction fragmentTransaction;
     android.support.v4.app.FragmentTransaction fragmentSecondaryTransaction;
-    static long playerCurrentPosition = 0;
+    static long playerCurrentPosition;
     static Cursor widgetCursor;
     public static int widgetRecipe;
     public static CheckBox widgetCheckbox;
+    static Boolean landscapeOrientation = false;
+    public static int lastVideoScreen = 0;
 
 
     @Override
@@ -83,7 +87,15 @@ public class MainActivity extends FragmentActivity implements MasterListFragment
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-            mContext = getApplicationContext();
+        if (getResources().getConfiguration().smallestScreenWidthDp>=599){
+            screenSizeTablet = true;
+        }
+        else {screenSizeTablet=false;
+        }
+        if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE) {
+            landscapeOrientation = true;
+        }
+        mContext = getApplicationContext();
             recipeJSON = getString( R.string.recipe_JSON );
             LoaderManager loaderManager = getLoaderManager();
             loaderManager.initLoader( RECIPE_LOADER_ID, null, this );

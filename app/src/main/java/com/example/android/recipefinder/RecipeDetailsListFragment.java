@@ -79,8 +79,9 @@ public class RecipeDetailsListFragment extends Fragment {
     Player.EventListener eventListener;
     Boolean playing;
     MediaSessionCompat mMediaSession;
-    public Long currentVideoPosition = MainActivity.playerCurrentPosition;
+    public Long currentVideoPosition;
     CheckBox widgetCheckBox;
+    Long savedVideoState = null;
 
 
     public RecipeDetailsListFragment() {
@@ -97,12 +98,6 @@ public class RecipeDetailsListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach( context );
         try {
-            if (mExoPlayer!=null){
-            mMediaSession.setActive( false );
-            mMediaSession.release();
-            mExoPlayer.release();
-            playing=false;}
-
             mCallback = (OnChangeSlideListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException( context.toString() + "must implement click listener" );
@@ -113,17 +108,18 @@ public class RecipeDetailsListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (getResources().getConfiguration().smallestScreenWidthDp>=599){
-        twoPane = true;
+        if (getResources().getConfiguration().smallestScreenWidthDp >= 599) {
+            twoPane = true;
+        } else {
+            twoPane = false;
         }
-        else {twoPane=false;}
 
         mCurrentId = MainActivity.currentRecipeId;
         mContext = getContext();
         mStepNumber = MainActivity.currentRecipeStep;
         rootView = inflater.inflate( R.layout.details_fragment, container, false );
         numbersArrayList = addNumberStrings();
-        currentVideoPosition = MainActivity.playerCurrentPosition;
+      //  currentVideoPosition = MainActivity.playerCurrentPosition;
         updateWidget();
 
         if (twoPane == true) {
@@ -134,10 +130,9 @@ public class RecipeDetailsListFragment extends Fragment {
             ingredientsButton = (OmegaCenterIconButton) rootView.findViewById( R.id.ingredients_button );
             nextButton = (OmegaCenterIconButton) rootView.findViewById( R.id.next_button );
             widgetCheckBox = (CheckBox) rootView.findViewById( R.id.checkbox_to_display_in_widget );
-            if (MainActivity.widgetRecipe == mCurrentId){
+            if (MainActivity.widgetRecipe == mCurrentId) {
                 widgetCheckBox.setChecked( true );
-            }
-            else {
+            } else {
                 widgetCheckBox.setChecked( false );
             }
             widgetCheckBox.setOnClickListener( MainActivity.listener );
@@ -155,10 +150,9 @@ public class RecipeDetailsListFragment extends Fragment {
             tempCursor.moveToPosition( mCurrentId );
             currentRecipeName = tempCursor.getString( tempCursor.getColumnIndex( "recipeName" ) );
             recipeName.setText( currentRecipeName );
-            if (MainActivity.widgetRecipe == mCurrentId){
+            if (MainActivity.widgetRecipe == mCurrentId) {
                 widgetCheckBox.setChecked( true );
-            }
-            else {
+            } else {
                 widgetCheckBox.setChecked( false );
             }
             MainActivity.widgetCheckbox = widgetCheckBox;
@@ -171,7 +165,6 @@ public class RecipeDetailsListFragment extends Fragment {
         if (mStepNumber == 0) {
             playerView.setVisibility( View.GONE );
         }
-
 
 
         View.OnClickListener listener = new View.OnClickListener() {
@@ -196,7 +189,7 @@ public class RecipeDetailsListFragment extends Fragment {
         }
         if (getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT || twoPane) {
             setData( mStepNumber );
-        } else if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE &! twoPane) {
+        } else if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE & !twoPane) {
             getVideoDetails( mStepNumber );
             if (currentVideoValue.isEmpty() || currentVideoValue.equals( "noVideo" )) {
                 noVideoTv.setVisibility( View.VISIBLE );
@@ -328,13 +321,13 @@ public class RecipeDetailsListFragment extends Fragment {
 
 
     public SimpleExoPlayer createExoPlayer() {
-            TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory( bandwidthMeter );
-            trackSelector = new DefaultTrackSelector( videoTrackSelectionFactory );
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance( mContext, trackSelector );
-            mainHandler = new Handler();
-            bandwidthMeter = new DefaultBandwidthMeter();
-            dataSourceFactory = new DefaultDataSourceFactory( mContext, Util.getUserAgent( mContext, "recipefinder" ), (TransferListener<? super DataSource>) bandwidthMeter );
-            videoSource = new ExtractorMediaSource.Factory( dataSourceFactory ).createMediaSource( Uri.parse( currentVideoValue ) );
+        TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory( bandwidthMeter );
+        trackSelector = new DefaultTrackSelector( videoTrackSelectionFactory );
+        mExoPlayer = ExoPlayerFactory.newSimpleInstance( mContext, trackSelector );
+        mainHandler = new Handler();
+        bandwidthMeter = new DefaultBandwidthMeter();
+        dataSourceFactory = new DefaultDataSourceFactory( mContext, Util.getUserAgent( mContext, "recipefinder" ), (TransferListener<? super DataSource>) bandwidthMeter );
+        videoSource = new ExtractorMediaSource.Factory( dataSourceFactory ).createMediaSource( Uri.parse( currentVideoValue ) );
         if (currentVideoValue != null && currentVideoValue != "noValue") {
             mExoPlayer.prepare( videoSource );
 
@@ -361,9 +354,6 @@ public class RecipeDetailsListFragment extends Fragment {
                     } else if (playWhenReady) {
                         playing = false;
                     }
-                    currentVideoPosition = mExoPlayer.getCurrentPosition();
-                    MainActivity.playerCurrentPosition = currentVideoPosition;
-
                 }
 
                 @Override
@@ -406,8 +396,6 @@ public class RecipeDetailsListFragment extends Fragment {
                 @Override
                 public void onStop() {
                     super.onStop();
-                    mExoPlayer.release();
-                    mMediaSession.release();
                 }
 
                 @Override
@@ -428,12 +416,11 @@ public class RecipeDetailsListFragment extends Fragment {
             mMediaSession.setPlaybackState( mStateBuilder.build() );
             mMediaSession.setCallback( new MySessionCallback() );
             mMediaSession.setActive( true );
-            if (currentVideoPosition!=null) {
+            if (currentVideoPosition != null) {
                 mStateBuilder.setState( PlaybackState.STATE_PLAYING, currentVideoPosition, 1f );
                 mExoPlayer.seekTo( currentVideoPosition );
                 mExoPlayer.setPlayWhenReady( true );
-            }
-            else{
+            } else {
                 mStateBuilder.setState( PlaybackState.STATE_PLAYING, 0, 1f );
             }
             mMediaSession.setPlaybackState( mStateBuilder.build() );
@@ -447,12 +434,12 @@ public class RecipeDetailsListFragment extends Fragment {
         if (MainActivity.widgetRecipe == -1) {
             RecipeListWidget.widgetIngredients = null;
         } else {
-            RecipeListWidget.widgetIngredients = getWidgetIngredients(MainActivity.widgetRecipe );
+            RecipeListWidget.widgetIngredients = getWidgetIngredients( MainActivity.widgetRecipe );
         }
     }
 
 
-    public ArrayList <String> getWidgetIngredients(int mCurrentId) {
+    public ArrayList<String> getWidgetIngredients(int mCurrentId) {
         ArrayList<String> ingredientsList = new ArrayList<>();
         Cursor ingredientsCursor = MainActivity.widgetCursor;
         assert ingredientsCursor != null;
@@ -485,12 +472,99 @@ public class RecipeDetailsListFragment extends Fragment {
 
 
     @Override
+    public void onStop() {
+        if (mExoPlayer != null) {
+            if (mExoPlayer.getCurrentPosition()>0) {
+                currentVideoPosition = mExoPlayer.getCurrentPosition();
+                MainActivity.playerCurrentPosition = currentVideoPosition;
+                savedVideoState = currentVideoPosition;
+            }
+            mMediaSession.setActive( false );
+            mExoPlayer.stop();
+            playing = false;
+            MainActivity.lastVideoScreen = mCurrentId;
+        }
+        super.onStop();
+    }
+    @Override
+
+    public void onPause() {
+        if (mExoPlayer != null) {
+            if (mExoPlayer.getCurrentPosition()>0) {
+                currentVideoPosition = mExoPlayer.getCurrentPosition();
+                MainActivity.playerCurrentPosition = currentVideoPosition;
+            }
+            mMediaSession.setActive( false );
+            mExoPlayer.stop();
+            playing = false;
+            MainActivity.lastVideoScreen = mCurrentId;
+        }
+        super.onPause();
+    }
+
+    @Override
     public void onDetach() {
-        if (mExoPlayer!=null){
-        mMediaSession.setActive( false );
-        mMediaSession.release();
-        mExoPlayer.release();
-        playing=false;}
+        if (mExoPlayer != null) {
+            mMediaSession.setActive( false );
+            mMediaSession.release();
+            mExoPlayer.release();
+            playing = false;
+        }
+        if (currentVideoPosition!=null){
+            onSaveInstanceState( new Bundle(  ));
+        }
         super.onDetach();
+    }
+
+    @Override
+    public void onResume() {
+        if (mMediaSession != null) {
+            if (MainActivity.lastVideoScreen==mCurrentId){
+            if (currentVideoPosition != null) {
+                mMediaSession.setActive( true );
+                mExoPlayer.prepare( videoSource );
+                mExoPlayer.setPlayWhenReady( true );
+                if (savedVideoState!=null){
+                mExoPlayer.seekTo( savedVideoState);
+                playing = true;}
+                else{
+                    mExoPlayer.seekTo( currentVideoPosition );
+                    playing = true;
+                }
+            }
+            }
+        }
+        super.onResume();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        if (currentVideoPosition!=null) {
+            outState.putLong( "Current Position", currentVideoPosition );
+        }
+        if (savedVideoState!=null){
+        outState.putLong( "Saved Position", savedVideoState );}
+        super.onSaveInstanceState( outState );
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        if (savedInstanceState!=null) {
+            currentVideoPosition = savedInstanceState.getLong( "Current Position" );
+            savedVideoState = savedInstanceState.getLong( "Saved Position" );
+        }
+        else {
+            currentVideoPosition = MainActivity.playerCurrentPosition;
+        }
+        if (currentVideoPosition!=null && mMediaSession!=null){
+            mExoPlayer.seekTo( currentVideoPosition );
+        }
+
+        super.onViewStateRestored( savedInstanceState );
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 }

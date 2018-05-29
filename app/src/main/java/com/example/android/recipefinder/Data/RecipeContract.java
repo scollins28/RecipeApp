@@ -3,7 +3,7 @@ package com.example.android.recipefinder.Data;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class RecipeContract {
+public final class RecipeContract {
 
     public static final String AUTHORITY = "com.example.android.recipefinder";
     public static final Uri BASE_CONTENT_URI = Uri.parse( "content://"+AUTHORITY );
